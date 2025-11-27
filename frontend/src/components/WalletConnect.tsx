@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAccount, useConnect, useDisconnect, useBalance, useSwitchChain, type Connector } from "wagmi";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -18,6 +19,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CHAIN_IDS, DEFAULT_CHAIN } from "@/config/wagmi";
+import { useCompliance } from "@/providers/ComplianceProvider";
+import { checkOFACBlacklist } from "@/services/ofacCheck";
 
 function formatAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -120,15 +123,41 @@ export function WalletConnect() {
   const { switchChain } = useSwitchChain();
   const { data: balance } = useBalance({ address });
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [ofacBlocked, setOfacBlocked] = useState(false);
+  const [ofacReason, setOfacReason] = useState<string>();
+
+  // Try to get compliance context, but don't fail if not available
+  let compliance: ReturnType<typeof useCompliance> | null = null;
+  try {
+    compliance = useCompliance();
+  } catch {
+    // ComplianceProvider not available, continue without it
+  }
+
+  // Check OFAC when address changes
+  useEffect(() => {
+    if (address) {
+      const result = checkOFACBlacklist(address);
+      if (result.isBlacklisted) {
+        setOfacBlocked(true);
+        setOfacReason(result.reason);
+        // Auto-disconnect blacklisted addresses
+        disconnect();
+      } else {
+        setOfacBlocked(false);
+        setOfacReason(undefined);
+      }
+    }
+  }, [address, disconnect]);
 
   // Check if connected to wrong network
   const isWrongNetwork = isConnected && chain && chain.id !== CHAIN_IDS.BSC_MAINNET && chain.id !== CHAIN_IDS.BSC_TESTNET;
 
   // Handle successful connection
-  const handleConnect = (connector: Connector) => {
+  const handleConnect = useCallback((connector: Connector) => {
     connect({ connector });
     setDialogOpen(false);
-  };
+  }, [connect]);
 
   if (isConnected && address) {
     return (
@@ -174,6 +203,33 @@ export function WalletConnect() {
     );
   }
 
+  // Show OFAC blocked warning
+  if (ofacBlocked) {
+    return (
+      <Dialog open={true}>
+        <DialogContent className="sm:max-w-md border-red-500/50">
+          <DialogHeader>
+            <DialogTitle className="text-center text-red-500">Access Denied</DialogTitle>
+            <DialogDescription className="text-center">
+              {ofacReason || "This wallet address is blocked due to regulatory restrictions."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 text-center text-sm text-zinc-400">
+            <p>
+              If you believe this is an error, please contact{" "}
+              <a href="mailto:compliance@paimongold.io" className="text-amber-500 hover:underline">
+                compliance@paimongold.io
+              </a>
+            </p>
+          </div>
+          <Button onClick={() => setOfacBlocked(false)} variant="outline">
+            Close
+          </Button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
@@ -196,7 +252,8 @@ export function WalletConnect() {
           ))}
         </div>
         <p className="text-center text-xs text-zinc-500">
-          By connecting a wallet, you agree to our Terms of Service
+          By connecting a wallet, you agree to our Terms of Service and confirm
+          you are not a US resident or on any sanctions list.
         </p>
       </DialogContent>
     </Dialog>
