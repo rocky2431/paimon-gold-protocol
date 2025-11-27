@@ -1,0 +1,144 @@
+{
+  "version": "4.2",
+  "project": {
+    "name": "paimon-gold-protocol",
+    "type": ["fullstack", "defi"],
+    "stack": ["Solidity", "Foundry", "Next.js", "TypeScript", "wagmi", "viem"],
+    "created": "2025-11-27",
+    "description": "BSC 多倍杠杆黄金 ETF 协议",
+    "detectionContext": {
+      "frameworks": {
+        "frontend": ["Next.js", "TypeScript", "wagmi", "viem", "TanStack Query", "Zustand"],
+        "backend": ["The Graph", "Chainlink Automation"],
+        "blockchain": ["Solidity", "Foundry", "OpenZeppelin v5"],
+        "testing": ["Foundry (forge test)", "Vitest", "Playwright"]
+      },
+      "packageManager": "pnpm",
+      "hasTests": false,
+      "hasCI": false,
+      "hasGit": false,
+      "detectedStacks": ["BSC", "EVM-compatible", "DeFi"],
+      "techStackDecisions": {
+        "smartContract": "Foundry (primary) + Hardhat (deploy scripts)",
+        "frontend": "Next.js 14 App Router",
+        "web3": "wagmi v2 + viem",
+        "indexing": "The Graph Subgraph",
+        "automation": "Chainlink Automation",
+        "upgradePattern": "UUPS",
+        "decidedAt": "2025-11-27"
+      }
+    }
+  },
+  "structure": "specs",
+
+  "context": {
+    "total_limit": 200000,
+    "thresholds": {
+      "green": 0.60,
+      "yellow": 0.70,
+      "orange": 0.85,
+      "red": 0.95
+    },
+    "compression": {
+      "trigger_task_count": 5,
+      "target_ratio": 0.10,
+      "archive_path": ".ultra/context-archive/"
+    }
+  },
+
+  "quality_gates": {
+    "test_coverage": {
+      "overall": 0.80,
+      "critical_paths": 1.00,
+      "branch": 0.75,
+      "function": 0.85
+    },
+    "code_quality": {
+      "max_function_lines": 50,
+      "max_nesting_depth": 3,
+      "max_complexity": 10,
+      "max_duplication_lines": 3
+    },
+    "smart_contract": {
+      "slither_severity": "medium",
+      "gas_optimization": true,
+      "reentrancy_guard": true,
+      "access_control": true
+    },
+    "frontend": {
+      "core_web_vitals": {
+        "lcp_ms": 2500,
+        "inp_ms": 200,
+        "cls": 0.1
+      }
+    }
+  },
+
+  "git": {
+    "branch_patterns": {
+      "feature": "feat/task-{id}-{slug}",
+      "bugfix": "fix/bug-{id}-{slug}",
+      "refactor": "refactor/{slug}",
+      "docs": "docs/{slug}",
+      "test": "test/{slug}"
+    },
+    "commit": {
+      "convention": "conventional-commits",
+      "co_author": "Claude <noreply@anthropic.com>"
+    },
+    "workflow": {
+      "strategy": "independent",
+      "auto_branch_naming": true,
+      "merge_strategy": "no-ff"
+    }
+  },
+
+  "paths": {
+    "tasks": ".ultra/tasks/tasks.json",
+    "specs": {
+      "product": ".ultra/specs/product.md",
+      "architecture": ".ultra/specs/architecture.md"
+    },
+    "docs_legacy": {
+      "prd": ".ultra/docs/prd.md",
+      "tech": ".ultra/docs/tech.md"
+    },
+    "research": ".ultra/docs/research/",
+    "decisions": ".ultra/docs/decisions/",
+    "context_archive": ".ultra/context-archive/",
+    "changes": ".ultra/changes/"
+  },
+
+  "tools": {
+    "mcp": {
+      "context7": true,
+      "exa": true
+    },
+    "skills": {
+      "guarding-quality": true,
+      "guarding-git-workflow": true,
+      "syncing-docs": true,
+      "automating-e2e-tests": true,
+      "compressing-context": true,
+      "guiding-workflow": true
+    }
+  },
+
+  "blockchain": {
+    "network": "bsc",
+    "chainId": 56,
+    "testnet": {
+      "network": "bsc-testnet",
+      "chainId": 97
+    },
+    "contracts": {
+      "upgradeable": true,
+      "proxy_pattern": "UUPS",
+      "libraries": ["OpenZeppelin"]
+    },
+    "oracle": {
+      "provider": "Chainlink",
+      "gold_price_feed": "XAU/USD"
+    }
+  }
+}

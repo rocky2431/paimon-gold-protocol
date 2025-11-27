@@ -1,0 +1,521 @@
+{
+  "version": "4.1",
+  "created": "2025-11-27 15:30:00",
+  "updated": "2025-11-27 15:30:00",
+  "project": {
+    "name": "paimon-gold-protocol",
+    "type": "fullstack-defi",
+    "stack": "Solidity + Foundry + Next.js + wagmi"
+  },
+  "summary": {
+    "total_tasks": 28,
+    "by_priority": { "P0": 16, "P1": 10, "P2": 2 },
+    "by_type": { "architecture": 4, "feature": 20, "testing": 3, "deployment": 1 },
+    "estimated_days": 45,
+    "parallel_opportunities": 8
+  },
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Initialize Foundry project with OpenZeppelin",
+      "description": "Setup Foundry project structure with foundry.toml, install OpenZeppelin Contracts v5, configure BSC networks (mainnet/testnet), setup remappings for dependencies",
+      "complexity": 2,
+      "priority": "P0",
+      "dependencies": [],
+      "estimated_days": 0.5,
+      "status": "pending",
+      "type": "architecture",
+      "trace_to": "specs/architecture.md#smart-contract-stack",
+      "acceptance_criteria": [
+        "forge build succeeds",
+        "OpenZeppelin v5 imports work",
+        "BSC RPC endpoints configured"
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Initialize Next.js 14 frontend with wagmi",
+      "description": "Setup Next.js 14 App Router project, install wagmi v2 + viem, configure BSC chain, setup TanStack Query provider, install shadcn/ui base components",
+      "complexity": 3,
+      "priority": "P0",
+      "dependencies": [],
+      "estimated_days": 1,
+      "status": "pending",
+      "type": "architecture",
+      "trace_to": "specs/architecture.md#frontend-stack",
+      "acceptance_criteria": [
+        "pnpm dev runs successfully",
+        "Wallet connection works (MetaMask)",
+        "BSC testnet configured"
+      ]
+    },
+    {
+      "id": "3",
+      "title": "Setup GitHub Actions CI/CD pipeline",
+      "description": "Create CI workflow: forge build, forge test, forge coverage, frontend lint/typecheck/test. Setup deployment workflows for testnet/mainnet",
+      "complexity": 3,
+      "priority": "P1",
+      "dependencies": ["1", "2"],
+      "estimated_days": 1,
+      "status": "pending",
+      "type": "architecture",
+      "trace_to": "specs/architecture.md#infrastructure-stack",
+      "acceptance_criteria": [
+        "CI runs on PR",
+        "Coverage report generated",
+        "Deploy workflow defined"
+      ]
+    },
+    {
+      "id": "4",
+      "title": "Implement OracleAdapter with Chainlink integration",
+      "description": "Create OracleAdapter contract integrating Chainlink XAU/USD (0x86896fEB19D8A607c3b11f2aF50A0f239Bd71CD0). Implement price staleness check (<1h), price deviation check (<5%), circuit breaker for anomalies. Add Pyth fallback interface placeholder.",
+      "complexity": 5,
+      "priority": "P0",
+      "dependencies": ["1"],
+      "estimated_days": 2,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#fr-4-oracle-功能",
+      "acceptance_criteria": [
+        "getLatestPrice() returns valid XAU/USD",
+        "Reverts on stale price (>1h)",
+        "Reverts on >5% deviation",
+        "Pausable on circuit breaker trigger"
+      ]
+    },
+    {
+      "id": "5",
+      "title": "Implement CollateralVault with multi-token support",
+      "description": "Create CollateralVault contract for secure collateral custody. Support USDT, USDC, BUSD, BNB. Implement deposit/withdraw with ReentrancyGuard. Track user balances per token. SafeERC20 for all transfers.",
+      "complexity": 4,
+      "priority": "P0",
+      "dependencies": ["1"],
+      "estimated_days": 2,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#fr-1-交易功能",
+      "acceptance_criteria": [
+        "deposit() accepts USDT/USDC/BUSD/BNB",
+        "withdraw() protected by ReentrancyGuard",
+        "User balances tracked correctly",
+        "Events emitted for all operations"
+      ]
+    },
+    {
+      "id": "6",
+      "title": "Implement PositionManager core logic",
+      "description": "Create PositionManager contract for leverage position lifecycle. Implement openPosition (2-20x leverage, min $10), closePosition (full/partial), Position struct storage. Integrate OracleAdapter for entry price. Calculate PnL with 18-decimal precision.",
+      "complexity": 8,
+      "priority": "P0",
+      "dependencies": ["4", "5"],
+      "estimated_days": 4,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#fr-1-交易功能",
+      "acceptance_criteria": [
+        "openPosition creates Position with correct params",
+        "closePosition calculates PnL correctly",
+        "Leverage enforced 2-20x",
+        "Min position size $10 enforced",
+        "Position struct matches spec"
+      ]
+    },
+    {
+      "id": "7",
+      "title": "Implement margin adjustment functionality",
+      "description": "Add addMargin and removeMargin functions to PositionManager. Enforce health factor >1.5 after margin removal. Update position collateral and recalculate leverage.",
+      "complexity": 4,
+      "priority": "P0",
+      "dependencies": ["6"],
+      "estimated_days": 1.5,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#fr-1-交易功能",
+      "acceptance_criteria": [
+        "addMargin increases position collateral",
+        "removeMargin enforces health factor >1.5",
+        "Events emitted for margin changes"
+      ]
+    },
+    {
+      "id": "8",
+      "title": "Implement LiquidationEngine with keeper support",
+      "description": "Create LiquidationEngine contract. Calculate health factor (collateral value / debt). Trigger liquidation when HF <1.0. Distribute 5-10% liquidation bonus to keeper. Partial liquidation for large positions. Integrate Chainlink Automation interface.",
+      "complexity": 7,
+      "priority": "P0",
+      "dependencies": ["6", "4"],
+      "estimated_days": 3,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#fr-3-清算功能",
+      "acceptance_criteria": [
+        "calculateHealthFactor returns correct value",
+        "liquidate() succeeds when HF <1.0",
+        "liquidate() reverts when HF >=1.0",
+        "Keeper receives liquidation bonus",
+        "Remaining collateral returned to user"
+      ]
+    },
+    {
+      "id": "9",
+      "title": "Implement InsuranceFund for bad debt coverage",
+      "description": "Create InsuranceFund contract. Receive 10% of protocol fees. Cover bad debt from underwater liquidations. Track fund balance and coverage ratio. Emergency withdraw for governance.",
+      "complexity": 4,
+      "priority": "P0",
+      "dependencies": ["8"],
+      "estimated_days": 1.5,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#fr-3-清算功能",
+      "acceptance_criteria": [
+        "Receives protocol fee allocation",
+        "Covers bad debt automatically",
+        "Balance tracking accurate",
+        "Emergency withdraw with timelock"
+      ]
+    },
+    {
+      "id": "10",
+      "title": "Implement LPToken (ERC20)",
+      "description": "Create LPToken contract extending ERC20Upgradeable. Mint on liquidity add, burn on liquidity remove. Track share of pool. Implement UUPS upgradeable pattern.",
+      "complexity": 3,
+      "priority": "P0",
+      "dependencies": ["1"],
+      "estimated_days": 1,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#fr-2-流动性功能",
+      "acceptance_criteria": [
+        "ERC20 compliant",
+        "Mint/burn restricted to LiquidityPool",
+        "UUPS upgradeable"
+      ]
+    },
+    {
+      "id": "11",
+      "title": "Implement LiquidityPool with fee distribution",
+      "description": "Create LiquidityPool contract. addLiquidity mints LP tokens proportionally. removeLiquidity burns tokens and returns assets. Track accumulated fees per share. Distribute 70% fees to LP, 30% to protocol. Optional cooldown period for withdrawals.",
+      "complexity": 6,
+      "priority": "P0",
+      "dependencies": ["5", "10"],
+      "estimated_days": 3,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#fr-2-流动性功能",
+      "acceptance_criteria": [
+        "addLiquidity mints correct LP amount",
+        "removeLiquidity returns principal + fees",
+        "Fee distribution 70/30 split correct",
+        "Cooldown period configurable"
+      ]
+    },
+    {
+      "id": "12",
+      "title": "Implement GoldLeverageRouter as entry point",
+      "description": "Create GoldLeverageRouter contract as unified user entry point. Route calls to PositionManager, LiquidityPool. Implement UUPS proxy with AccessControl. Add pausable functionality. Validate all input parameters.",
+      "complexity": 5,
+      "priority": "P0",
+      "dependencies": ["6", "11"],
+      "estimated_days": 2,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/architecture.md#contract-1-goldleveragerouter",
+      "acceptance_criteria": [
+        "All user functions accessible via Router",
+        "UUPS proxy works correctly",
+        "Pausable in emergency",
+        "AccessControl roles configured"
+      ]
+    },
+    {
+      "id": "13",
+      "title": "Implement OrderManager for limit orders",
+      "description": "Create OrderManager contract for limit open orders (FR-1.4) and TP/SL orders (FR-1.5). Store pending orders with trigger price, expiry (GTC/GTD). Keeper-compatible execution interface. Bind TP/SL to position lifecycle.",
+      "complexity": 6,
+      "priority": "P1",
+      "dependencies": ["6", "4"],
+      "estimated_days": 3,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#epic-4-订单系统",
+      "acceptance_criteria": [
+        "Create limit order with trigger price",
+        "Cancel order before execution",
+        "Keeper can execute when price triggers",
+        "TP/SL auto-closes position"
+      ]
+    },
+    {
+      "id": "14",
+      "title": "Implement flash loan protection",
+      "description": "Add minimum hold blocks (10 blocks ~30s) to PositionManager. Prevent same-block open/close. Detect and block flash loan attacks. Store position open block number.",
+      "complexity": 3,
+      "priority": "P0",
+      "dependencies": ["6"],
+      "estimated_days": 1,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#risks-mitigation",
+      "acceptance_criteria": [
+        "closePosition reverts within 10 blocks",
+        "Withdrawal reverts within 10 blocks",
+        "Block number stored per position"
+      ]
+    },
+    {
+      "id": "15",
+      "title": "Setup multi-sig and timelock for admin",
+      "description": "Deploy Safe multi-sig (3/5) for ADMIN_ROLE. Deploy Timelock contract with 48h delay. Configure AccessControl roles: ADMIN (multi-sig), KEEPER (automation), PAUSER (ops team). Test role hierarchy.",
+      "complexity": 4,
+      "priority": "P0",
+      "dependencies": ["12"],
+      "estimated_days": 1.5,
+      "status": "pending",
+      "type": "architecture",
+      "trace_to": "specs/product.md#security-constraints",
+      "acceptance_criteria": [
+        "3/5 multi-sig deployed",
+        "48h timelock for upgrades",
+        "All roles assigned correctly",
+        "Emergency pause tested"
+      ]
+    },
+    {
+      "id": "16",
+      "title": "Build wallet connection component",
+      "description": "Create WalletConnect component using wagmi. Support MetaMask, WalletConnect, Trust Wallet, Coinbase Wallet. Display connected address, balance, network. Handle network switching to BSC.",
+      "complexity": 3,
+      "priority": "P0",
+      "dependencies": ["2"],
+      "estimated_days": 1,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#usability-requirements",
+      "acceptance_criteria": [
+        "Connect with 4+ wallets",
+        "Display address and balance",
+        "Switch to BSC if wrong network"
+      ]
+    },
+    {
+      "id": "17",
+      "title": "Build trading interface with leverage slider",
+      "description": "Create trading page with: collateral input, leverage slider (2-20x), direction toggle (long/short), position size calculator, entry price display (live from Oracle), health factor preview, open position button. Real-time updates.",
+      "complexity": 6,
+      "priority": "P0",
+      "dependencies": ["16", "12"],
+      "estimated_days": 3,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#us-1-1-开仓",
+      "acceptance_criteria": [
+        "Leverage slider 2-20x",
+        "Live XAU/USD price display",
+        "Position size calculated correctly",
+        "Transaction confirmation flow"
+      ]
+    },
+    {
+      "id": "18",
+      "title": "Build portfolio view with positions table",
+      "description": "Create portfolio page showing: open positions table (entry price, current price, PnL%, health factor), closed positions history, total equity, close/adjust position actions. Real-time PnL updates via useReadContract polling.",
+      "complexity": 5,
+      "priority": "P0",
+      "dependencies": ["17"],
+      "estimated_days": 2,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#us-1-2-平仓",
+      "acceptance_criteria": [
+        "Display all user positions",
+        "Real-time PnL calculation",
+        "Close position action works",
+        "Health factor color-coded"
+      ]
+    },
+    {
+      "id": "19",
+      "title": "Build LP interface for liquidity providers",
+      "description": "Create LP page with: deposit form (token selector, amount), withdraw form (LP token amount), pool stats (TVL, APY estimate, utilization), user share display, fee earnings tracker.",
+      "complexity": 4,
+      "priority": "P0",
+      "dependencies": ["16", "11"],
+      "estimated_days": 2,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#us-3-1-提供流动性",
+      "acceptance_criteria": [
+        "Deposit flow works",
+        "Withdraw flow works",
+        "APY estimate displayed",
+        "User LP balance shown"
+      ]
+    },
+    {
+      "id": "20",
+      "title": "Build price chart with TradingView Lightweight Charts",
+      "description": "Integrate TradingView Lightweight Charts for XAU/USD price display. Show candlestick chart, volume, basic indicators (MA). Fetch historical data from Chainlink or external API. Real-time price updates.",
+      "complexity": 4,
+      "priority": "P1",
+      "dependencies": ["17"],
+      "estimated_days": 2,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/architecture.md#frontend-stack",
+      "acceptance_criteria": [
+        "Candlestick chart renders",
+        "Real-time price updates",
+        "Mobile responsive"
+      ]
+    },
+    {
+      "id": "21",
+      "title": "Create The Graph subgraph for indexing",
+      "description": "Create subgraph with schema for Position, Trade, LP events. Write event handlers for PositionOpened, PositionClosed, Liquidated, LiquidityAdded, LiquidityRemoved. Deploy to The Graph hosted service or decentralized network.",
+      "complexity": 5,
+      "priority": "P1",
+      "dependencies": ["12"],
+      "estimated_days": 2,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/architecture.md#backend-stack",
+      "acceptance_criteria": [
+        "Schema matches spec",
+        "Events indexed correctly",
+        "GraphQL queries work",
+        "Indexing delay <30s"
+      ]
+    },
+    {
+      "id": "22",
+      "title": "Write unit tests for all contracts (80% coverage)",
+      "description": "Write comprehensive unit tests using Foundry. Cover all public functions, edge cases, access control. Target 80% overall coverage, 100% for critical paths (liquidation, position management). Include happy path and failure cases.",
+      "complexity": 6,
+      "priority": "P0",
+      "dependencies": ["6", "8", "11", "12"],
+      "estimated_days": 4,
+      "status": "pending",
+      "type": "testing",
+      "trace_to": "specs/architecture.md#testing-strategy",
+      "acceptance_criteria": [
+        "forge coverage shows >=80%",
+        "Critical paths 100% covered",
+        "All tests pass",
+        "Edge cases documented"
+      ]
+    },
+    {
+      "id": "23",
+      "title": "Write fuzz tests for math-heavy functions",
+      "description": "Write Foundry fuzz tests for: PnL calculation, health factor calculation, leverage bounds (2-20), liquidation threshold, fee calculations. Use bound() for input ranges. Target 256 fuzz runs minimum.",
+      "complexity": 5,
+      "priority": "P0",
+      "dependencies": ["22"],
+      "estimated_days": 2,
+      "status": "pending",
+      "type": "testing",
+      "trace_to": "specs/architecture.md#testing-strategy",
+      "acceptance_criteria": [
+        "Fuzz tests for all math functions",
+        "No failures in 256+ runs",
+        "Invariants documented"
+      ]
+    },
+    {
+      "id": "24",
+      "title": "Write fork tests with real BSC data",
+      "description": "Write Foundry fork tests using BSC mainnet fork. Test with real Chainlink XAU/USD prices. Simulate real trading scenarios. Verify gas consumption within limits (<300K for open).",
+      "complexity": 4,
+      "priority": "P1",
+      "dependencies": ["22"],
+      "estimated_days": 1.5,
+      "status": "pending",
+      "type": "testing",
+      "trace_to": "specs/architecture.md#testing-strategy",
+      "acceptance_criteria": [
+        "Fork tests pass with real oracle",
+        "Gas within limits",
+        "E2E scenarios work"
+      ]
+    },
+    {
+      "id": "25",
+      "title": "Build order management interface",
+      "description": "Create order management UI: create limit order form, pending orders list, cancel order action, TP/SL setting for open positions. Show order status and execution history.",
+      "complexity": 4,
+      "priority": "P1",
+      "dependencies": ["13", "18"],
+      "estimated_days": 2,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#us-4-1-限价开仓",
+      "acceptance_criteria": [
+        "Create limit order works",
+        "Cancel order works",
+        "Set TP/SL for position",
+        "Order history displayed"
+      ]
+    },
+    {
+      "id": "26",
+      "title": "Implement geo-blocking for US users",
+      "description": "Add IP-based geo-blocking for US users in frontend. Display compliance disclaimer before wallet connection. Integrate OFAC wallet blacklist check. Log blocked access attempts.",
+      "complexity": 3,
+      "priority": "P1",
+      "dependencies": ["16"],
+      "estimated_days": 1,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#regulatory-constraints",
+      "acceptance_criteria": [
+        "US IPs blocked with message",
+        "Disclaimer shown before connect",
+        "OFAC blacklist integrated"
+      ]
+    },
+    {
+      "id": "27",
+      "title": "Prepare audit documentation and run Slither",
+      "description": "Prepare audit package: NatSpec comments on all public functions, architecture diagrams, threat model document. Run Slither static analysis and fix all medium+ issues. Generate audit-ready codebase.",
+      "complexity": 4,
+      "priority": "P1",
+      "dependencies": ["22", "23"],
+      "estimated_days": 2,
+      "status": "pending",
+      "type": "feature",
+      "trace_to": "specs/product.md#security-constraints",
+      "acceptance_criteria": [
+        "All functions have NatSpec",
+        "Slither shows no medium+ issues",
+        "Threat model documented",
+        "Audit package ready"
+      ]
+    },
+    {
+      "id": "28",
+      "title": "Deploy to BSC Testnet and verify contracts",
+      "description": "Deploy all contracts to BSC Testnet. Verify on BSCScan. Configure testnet frontend. Create deployment documentation. Test full user flows on testnet.",
+      "complexity": 4,
+      "priority": "P2",
+      "dependencies": ["22", "15"],
+      "estimated_days": 1.5,
+      "status": "pending",
+      "type": "deployment",
+      "trace_to": "specs/architecture.md#deployment-architecture",
+      "acceptance_criteria": [
+        "All contracts deployed to testnet",
+        "Contracts verified on BSCScan",
+        "Frontend connected to testnet",
+        "Full flow tested"
+      ]
+    }
+  ],
+  "metadata": {
+    "totalTasks": 28,
+    "completedTasks": 0,
+    "inProgressTasks": 0,
+    "pendingTasks": 28,
+    "totalEstimatedDays": 45
+  }
+}
