@@ -23,8 +23,9 @@
       "priority": "P0",
       "dependencies": [],
       "estimated_days": 0.5,
-      "status": "in_progress",
+      "status": "completed",
       "started_at": "2025-11-27T15:45:00Z",
+      "completed_at": "2025-11-27T16:30:00Z",
       "type": "architecture",
       "trace_to": "specs/architecture.md#smart-contract-stack",
       "acceptance_criteria": [
@@ -514,9 +515,9 @@
   ],
   "metadata": {
     "totalTasks": 28,
-    "completedTasks": 0,
+    "completedTasks": 1,
     "inProgressTasks": 0,
-    "pendingTasks": 28,
+    "pendingTasks": 27,
     "totalEstimatedDays": 45
   }
 }
