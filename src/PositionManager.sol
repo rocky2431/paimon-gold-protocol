@@ -201,6 +201,95 @@ contract PositionManager is IPositionManager, Ownable, Pausable, ReentrancyGuard
         }
     }
 
+    /// @inheritdoc IPositionManager
+    function addMargin(
+        uint256 positionId,
+        uint256 amount
+    ) external nonReentrant whenNotPaused {
+        if (amount == 0) {
+            revert InvalidMarginAmount();
+        }
+
+        if (!_positionExists[positionId]) {
+            revert PositionNotFound();
+        }
+
+        Position storage pos = _positions[positionId];
+
+        if (pos.owner != msg.sender) {
+            revert NotPositionOwner();
+        }
+
+        // Transfer additional collateral from user
+        IERC20(pos.collateralToken).safeTransferFrom(msg.sender, address(this), amount);
+
+        // Update position collateral
+        pos.collateralAmount += amount;
+
+        emit MarginAdded(positionId, amount, pos.collateralAmount);
+    }
+
+    /// @inheritdoc IPositionManager
+    function removeMargin(
+        uint256 positionId,
+        uint256 amount
+    ) external nonReentrant whenNotPaused {
+        if (amount == 0) {
+            revert InvalidMarginAmount();
+        }
+
+        if (!_positionExists[positionId]) {
+            revert PositionNotFound();
+        }
+
+        Position storage pos = _positions[positionId];
+
+        if (pos.owner != msg.sender) {
+            revert NotPositionOwner();
+        }
+
+        // Flash loan protection
+        if (block.number <= pos.openBlock + MIN_HOLD_BLOCKS) {
+            revert PositionTooNew();
+        }
+
+        // Check sufficient margin
+        if (amount > pos.collateralAmount) {
+            revert InsufficientMargin();
+        }
+
+        // Calculate new collateral and check health factor
+        uint256 newCollateral = pos.collateralAmount - amount;
+
+        // Calculate health factor with new collateral
+        uint256 currentPrice = oracle.getLatestPriceView();
+        int256 pnl = _calculatePnL(pos.size, pos.entryPrice, currentPrice, pos.isLong, PRECISION);
+
+        int256 effectiveCollateral = int256(newCollateral) + pnl;
+
+        // Health factor = effectiveCollateral / minRequiredMargin
+        // minRequiredMargin = size / MAX_LEVERAGE (minimum margin to hold the position)
+        uint256 minRequiredMargin = pos.size / MAX_LEVERAGE;
+
+        // Require HF >= 1.5 (1.5e18)
+        if (effectiveCollateral <= 0) {
+            revert InsufficientHealthFactor();
+        }
+
+        uint256 newHealthFactor = (uint256(effectiveCollateral) * PRECISION) / minRequiredMargin;
+        if (newHealthFactor < 1.5e18) {
+            revert InsufficientHealthFactor();
+        }
+
+        // Update position collateral
+        pos.collateralAmount = newCollateral;
+
+        // Transfer margin to user
+        IERC20(pos.collateralToken).safeTransfer(msg.sender, amount);
+
+        emit MarginRemoved(positionId, amount, pos.collateralAmount);
+    }
+
     // ============ View Functions ============
 
     /// @inheritdoc IPositionManager

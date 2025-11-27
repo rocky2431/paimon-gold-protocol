@@ -685,4 +685,226 @@ contract PositionManagerTest is Test {
         // Should be under 200,000 gas
         assertLt(gasUsed, 200000);
     }
+
+    // ============ Margin Adjustment Tests ============
+
+    function test_AddMargin() public {
+        // Open position with 1000 USDT collateral
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT,
+            10,
+            true
+        );
+
+        uint256 additionalMargin = 500 * 1e18;
+
+        vm.prank(user1);
+        positionManager.addMargin(positionId, additionalMargin);
+
+        IPositionManager.Position memory pos = positionManager.getPosition(positionId);
+
+        // Collateral should increase
+        assertEq(pos.collateralAmount, COLLATERAL_AMOUNT + additionalMargin);
+        // Size should remain the same
+        assertEq(pos.size, COLLATERAL_AMOUNT * 10);
+    }
+
+    function test_AddMarginEmitsEvent() public {
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT,
+            10,
+            true
+        );
+
+        uint256 additionalMargin = 500 * 1e18;
+
+        vm.expectEmit(true, false, false, true);
+        emit IPositionManager.MarginAdded(positionId, additionalMargin, COLLATERAL_AMOUNT + additionalMargin);
+
+        vm.prank(user1);
+        positionManager.addMargin(positionId, additionalMargin);
+    }
+
+    function test_AddMarginIncreasesHealthFactor() public {
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT,
+            10,
+            true
+        );
+
+        // Price drops 5%, reducing health factor
+        mockAggregator.setPrice(1900_00000000);
+
+        uint256 healthBefore = positionManager.getHealthFactor(positionId);
+
+        // Add margin to improve health
+        vm.prank(user1);
+        positionManager.addMargin(positionId, 500 * 1e18);
+
+        uint256 healthAfter = positionManager.getHealthFactor(positionId);
+
+        assertGt(healthAfter, healthBefore);
+    }
+
+    function test_RemoveMargin() public {
+        // Open position with extra collateral
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT * 2, // 2000 USDT collateral
+            5, // 5x leverage = 10000 size
+            true
+        );
+
+        uint256 balanceBefore = usdt.balanceOf(user1);
+        uint256 removeAmount = 500 * 1e18;
+
+        vm.roll(block.number + 11); // Pass flash loan protection
+
+        vm.prank(user1);
+        positionManager.removeMargin(positionId, removeAmount);
+
+        uint256 balanceAfter = usdt.balanceOf(user1);
+        IPositionManager.Position memory pos = positionManager.getPosition(positionId);
+
+        // Collateral should decrease
+        assertEq(pos.collateralAmount, COLLATERAL_AMOUNT * 2 - removeAmount);
+        // User should receive the removed margin
+        assertEq(balanceAfter - balanceBefore, removeAmount);
+    }
+
+    function test_RemoveMarginEmitsEvent() public {
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT * 2,
+            5,
+            true
+        );
+
+        uint256 removeAmount = 500 * 1e18;
+        vm.roll(block.number + 11);
+
+        vm.expectEmit(true, false, false, true);
+        emit IPositionManager.MarginRemoved(positionId, removeAmount, COLLATERAL_AMOUNT * 2 - removeAmount);
+
+        vm.prank(user1);
+        positionManager.removeMargin(positionId, removeAmount);
+    }
+
+    function test_RevertRemoveMarginInsufficientHealthFactor() public {
+        // Open position with just enough collateral
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT,
+            10,
+            true
+        );
+
+        vm.roll(block.number + 11);
+
+        // Try to remove too much margin (would make HF < 1.5)
+        vm.prank(user1);
+        vm.expectRevert(IPositionManager.InsufficientHealthFactor.selector);
+        positionManager.removeMargin(positionId, 800 * 1e18);
+    }
+
+    function test_RevertRemoveMarginMoreThanAvailable() public {
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT,
+            10,
+            true
+        );
+
+        vm.roll(block.number + 11);
+
+        // Try to remove more than available
+        vm.prank(user1);
+        vm.expectRevert(IPositionManager.InsufficientMargin.selector);
+        positionManager.removeMargin(positionId, COLLATERAL_AMOUNT + 1);
+    }
+
+    function test_RevertAddMarginZeroAmount() public {
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT,
+            10,
+            true
+        );
+
+        vm.prank(user1);
+        vm.expectRevert(IPositionManager.InvalidMarginAmount.selector);
+        positionManager.addMargin(positionId, 0);
+    }
+
+    function test_RevertRemoveMarginZeroAmount() public {
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT,
+            10,
+            true
+        );
+
+        vm.roll(block.number + 11);
+
+        vm.prank(user1);
+        vm.expectRevert(IPositionManager.InvalidMarginAmount.selector);
+        positionManager.removeMargin(positionId, 0);
+    }
+
+    function test_RevertAddMarginNonOwner() public {
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT,
+            10,
+            true
+        );
+
+        vm.prank(user2);
+        vm.expectRevert(IPositionManager.NotPositionOwner.selector);
+        positionManager.addMargin(positionId, 100 * 1e18);
+    }
+
+    function test_RevertRemoveMarginNonOwner() public {
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT,
+            10,
+            true
+        );
+
+        vm.roll(block.number + 11);
+
+        vm.prank(user2);
+        vm.expectRevert(IPositionManager.NotPositionOwner.selector);
+        positionManager.removeMargin(positionId, 100 * 1e18);
+    }
+
+    function test_RemoveMarginFlashLoanProtection() public {
+        vm.prank(user1);
+        uint256 positionId = positionManager.openPosition(
+            address(usdt),
+            COLLATERAL_AMOUNT * 2,
+            5,
+            true
+        );
+
+        // Try to remove margin in same block (flash loan attack)
+        vm.prank(user1);
+        vm.expectRevert(IPositionManager.PositionTooNew.selector);
+        positionManager.removeMargin(positionId, 100 * 1e18);
+    }
 }
