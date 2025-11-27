@@ -52,6 +52,20 @@ interface IPositionManager {
         uint256 payout
     );
 
+    /// @notice Emitted when margin is added to a position
+    event MarginAdded(
+        uint256 indexed positionId,
+        uint256 amount,
+        uint256 newCollateral
+    );
+
+    /// @notice Emitted when margin is removed from a position
+    event MarginRemoved(
+        uint256 indexed positionId,
+        uint256 amount,
+        uint256 newCollateral
+    );
+
     // ============ Errors ============
 
     /// @notice Thrown when leverage is outside valid range (2-20x)
@@ -74,6 +88,15 @@ interface IPositionManager {
 
     /// @notice Thrown when collateral token is not supported
     error UnsupportedCollateral();
+
+    /// @notice Thrown when health factor would be too low after margin removal
+    error InsufficientHealthFactor();
+
+    /// @notice Thrown when trying to remove more margin than available
+    error InsufficientMargin();
+
+    /// @notice Thrown when margin amount is zero
+    error InvalidMarginAmount();
 
     // ============ Functions ============
 
@@ -118,4 +141,14 @@ interface IPositionManager {
     /// @param positionId The position ID
     /// @return healthFactor The health factor (18 decimals, 1e18 = 100%)
     function getHealthFactor(uint256 positionId) external view returns (uint256 healthFactor);
+
+    /// @notice Add margin to an existing position
+    /// @param positionId The position ID
+    /// @param amount Amount of collateral to add
+    function addMargin(uint256 positionId, uint256 amount) external;
+
+    /// @notice Remove margin from an existing position
+    /// @param positionId The position ID
+    /// @param amount Amount of collateral to remove
+    function removeMargin(uint256 positionId, uint256 amount) external;
 }
