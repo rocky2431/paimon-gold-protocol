@@ -519,7 +519,9 @@
       "priority": "P1",
       "dependencies": ["16"],
       "estimated_days": 1,
-      "status": "pending",
+      "status": "completed",
+      "started_at": "2025-11-28T06:30:00Z",
+      "completed_at": "2025-11-28T07:00:00Z",
       "type": "feature",
       "trace_to": "specs/product.md#regulatory-constraints",
       "acceptance_criteria": [
