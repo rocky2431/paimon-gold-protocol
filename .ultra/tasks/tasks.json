@@ -379,7 +379,9 @@
       "priority": "P0",
       "dependencies": ["16", "11"],
       "estimated_days": 2,
-      "status": "pending",
+      "status": "completed",
+      "started_at": "2025-11-28T03:00:00Z",
+      "completed_at": "2025-11-28T03:30:00Z",
       "type": "feature",
       "trace_to": "specs/product.md#us-3-1-提供流动性",
       "acceptance_criteria": [
