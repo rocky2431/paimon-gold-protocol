@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -73,6 +73,16 @@ export function ComplianceDisclaimer({
   const [hasScrolled, setHasScrolled] = useState(false);
   const [checkboxChecked, setCheckboxChecked] = useState(false);
 
+  // Reset state when dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setHasScrolled(false);
+       
+      setCheckboxChecked(false);
+    }
+  }, [isOpen]);
+
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLDivElement;
     const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 50;
@@ -85,14 +95,6 @@ export function ComplianceDisclaimer({
     saveDisclaimerAcceptance();
     onAccept();
   }, [onAccept]);
-
-  // Reset state when dialog opens
-  useEffect(() => {
-    if (isOpen) {
-      setHasScrolled(false);
-      setCheckboxChecked(false);
-    }
-  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onDecline()}>
@@ -167,7 +169,7 @@ export function ComplianceDisclaimer({
             <section>
               <h3 className="mb-2 font-semibold text-white">6. Limitation of Liability</h3>
               <p>
-                The protocol is provided "as is" without warranties of any kind. In no event
+                The protocol is provided &quot;as is&quot; without warranties of any kind. In no event
                 shall the protocol operators be liable for any damages arising from the use
                 or inability to use the protocol, including but not limited to direct,
                 indirect, incidental, or consequential damages.

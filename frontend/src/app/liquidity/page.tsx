@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { useAccount } from "wagmi";
 import { WalletConnect } from "@/components/WalletConnect";
 import { LiquidityPanel } from "@/components/liquidity/LiquidityPanel";
@@ -232,25 +233,34 @@ export default function LiquidityPage() {
   const [showDemo, setShowDemo] = useState(true);
 
   // Mock pool stats - in production this would come from contract
-  const [poolStats, setPoolStats] = useState({
+  // Use useMemo to recompute stats based on showDemo and isConnected
+  const poolStats = useMemo(() => ({
     tvl: 2450000,
     apy: 12.5,
     utilization: 68.5,
     totalLpTokens: 2400000,
-    userLpBalance: showDemo ? 15000 : 0,
-    userShare: showDemo ? 0.625 : 0,
-    pendingFees: showDemo ? 45.67 : 0,
+    userLpBalance: showDemo && isConnected ? 15000 : 0,
+    userShare: showDemo && isConnected ? 0.625 : 0,
+    pendingFees: showDemo && isConnected ? 45.67 : 0,
+  }), [showDemo, isConnected]);
+
+  // State for pool mutations (deposit/withdraw)
+  const [poolMutations, setPoolMutations] = useState({
+    tvlDelta: 0,
+    lpTokensDelta: 0,
+    userLpDelta: 0,
   });
 
-  // Update user stats based on demo mode
-  useEffect(() => {
-    setPoolStats((prev) => ({
-      ...prev,
-      userLpBalance: showDemo && isConnected ? 15000 : 0,
-      userShare: showDemo && isConnected ? 0.625 : 0,
-      pendingFees: showDemo && isConnected ? 45.67 : 0,
-    }));
-  }, [showDemo, isConnected]);
+  // Compute effective pool stats with mutations
+  const effectivePoolStats = useMemo(() => ({
+    ...poolStats,
+    tvl: poolStats.tvl + poolMutations.tvlDelta,
+    totalLpTokens: poolStats.totalLpTokens + poolMutations.lpTokensDelta,
+    userLpBalance: poolStats.userLpBalance + poolMutations.userLpDelta,
+    userShare: poolStats.totalLpTokens + poolMutations.lpTokensDelta > 0
+      ? ((poolStats.userLpBalance + poolMutations.userLpDelta) / (poolStats.totalLpTokens + poolMutations.lpTokensDelta)) * 100
+      : 0,
+  }), [poolStats, poolMutations]);
 
   // Handle deposit
   const handleDeposit = useCallback(async (token: string, amount: number) => {
@@ -258,13 +268,12 @@ export default function LiquidityPage() {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     console.log(`Depositing ${amount} ${token}`);
 
-    // Update mock stats
-    setPoolStats((prev) => ({
+    // Update pool mutations
+    setPoolMutations((prev) => ({
       ...prev,
-      tvl: prev.tvl + amount,
-      totalLpTokens: prev.totalLpTokens + amount,
-      userLpBalance: prev.userLpBalance + amount,
-      userShare: ((prev.userLpBalance + amount) / (prev.totalLpTokens + amount)) * 100,
+      tvlDelta: prev.tvlDelta + amount,
+      lpTokensDelta: prev.lpTokensDelta + amount,
+      userLpDelta: prev.userLpDelta + amount,
     }));
   }, []);
 
@@ -275,21 +284,17 @@ export default function LiquidityPage() {
     console.log(`Withdrawing ${lpAmount} LP tokens`);
 
     // Calculate USD value
-    const usdRatio = poolStats.tvl / poolStats.totalLpTokens;
+    const usdRatio = effectivePoolStats.tvl / effectivePoolStats.totalLpTokens;
     const usdAmount = lpAmount * usdRatio;
 
-    // Update mock stats
-    setPoolStats((prev) => ({
+    // Update pool mutations
+    setPoolMutations((prev) => ({
       ...prev,
-      tvl: prev.tvl - usdAmount,
-      totalLpTokens: prev.totalLpTokens - lpAmount,
-      userLpBalance: prev.userLpBalance - lpAmount,
-      userShare:
-        prev.totalLpTokens - lpAmount > 0
-          ? ((prev.userLpBalance - lpAmount) / (prev.totalLpTokens - lpAmount)) * 100
-          : 0,
+      tvlDelta: prev.tvlDelta - usdAmount,
+      lpTokensDelta: prev.lpTokensDelta - lpAmount,
+      userLpDelta: prev.userLpDelta - lpAmount,
     }));
-  }, [poolStats]);
+  }, [effectivePoolStats]);
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
@@ -297,19 +302,19 @@ export default function LiquidityPage() {
       <header className="border-b border-zinc-800 bg-zinc-900/50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <div className="flex items-center gap-8">
-            <a href="/" className="text-xl font-bold text-amber-500">
+            <Link href="/" className="text-xl font-bold text-amber-500">
               Paimon Gold
-            </a>
+            </Link>
             <nav className="hidden gap-6 md:flex">
-              <a href="/trade" className="text-zinc-400 hover:text-white">
+              <Link href="/trade" className="text-zinc-400 hover:text-white">
                 Trade
-              </a>
-              <a href="/portfolio" className="text-zinc-400 hover:text-white">
+              </Link>
+              <Link href="/portfolio" className="text-zinc-400 hover:text-white">
                 Portfolio
-              </a>
-              <a href="/liquidity" className="font-medium text-amber-500">
+              </Link>
+              <Link href="/liquidity" className="font-medium text-amber-500">
                 Liquidity
-              </a>
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">
@@ -348,10 +353,10 @@ export default function LiquidityPage() {
         {/* Pool Stats */}
         <div className="mb-8">
           <PoolStats
-            tvl={poolStats.tvl}
-            apy={poolStats.apy}
-            utilization={poolStats.utilization}
-            totalLpTokens={poolStats.totalLpTokens}
+            tvl={effectivePoolStats.tvl}
+            apy={effectivePoolStats.apy}
+            utilization={effectivePoolStats.utilization}
+            totalLpTokens={effectivePoolStats.totalLpTokens}
           />
         </div>
 
@@ -360,11 +365,11 @@ export default function LiquidityPage() {
           {/* Left Column - User Position & Fee History */}
           <div className="space-y-8 lg:col-span-2">
             <UserPosition
-              userLpBalance={poolStats.userLpBalance}
-              userShare={poolStats.userShare}
-              tvl={poolStats.tvl}
-              pendingFees={poolStats.pendingFees}
-              apy={poolStats.apy}
+              userLpBalance={effectivePoolStats.userLpBalance}
+              userShare={effectivePoolStats.userShare}
+              tvl={effectivePoolStats.tvl}
+              pendingFees={effectivePoolStats.pendingFees}
+              apy={effectivePoolStats.apy}
             />
             <FeeHistory isConnected={isConnected} />
           </div>
@@ -372,7 +377,7 @@ export default function LiquidityPage() {
           {/* Right Column - Deposit/Withdraw Panel */}
           <div>
             <LiquidityPanel
-              poolStats={poolStats}
+              poolStats={effectivePoolStats}
               onDeposit={handleDeposit}
               onWithdraw={handleWithdraw}
             />

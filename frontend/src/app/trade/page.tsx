@@ -9,7 +9,7 @@ import Link from "next/link";
 
 export default function TradePage() {
   const { isConnected } = useAccount();
-  const [currentPrice, setCurrentPrice] = useState(2650);
+  const [, setCurrentPrice] = useState(2650);
 
   const handlePriceUpdate = useCallback((price: number) => {
     setCurrentPrice(price);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAccount } from "wagmi";
 import Link from "next/link";
 import { WalletConnect } from "@/components/WalletConnect";
@@ -86,7 +86,7 @@ function formatDate(date: Date): string {
 
 export default function PortfolioPage() {
   const { isConnected } = useAccount();
-  const [positions, setPositions] = useState<Position[]>([]);
+  const [closedPositionIds, setClosedPositionIds] = useState<Set<string>>(new Set());
   const [closedPositions] = useState<ClosedPosition[]>(MOCK_CLOSED_POSITIONS);
   const [currentPrice, setCurrentPrice] = useState(MOCK_XAU_PRICE);
   const [showDemo, setShowDemo] = useState(false);
@@ -102,20 +102,17 @@ export default function PortfolioPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Load positions (mock for now)
-  useEffect(() => {
-    if (showDemo) {
-      setPositions(MOCK_POSITIONS);
-    } else {
-      setPositions([]);
-    }
-  }, [showDemo]);
+  // Compute positions based on demo mode (using useMemo to avoid setState in useEffect)
+  const positions = useMemo(() => {
+    const basePositions = showDemo ? MOCK_POSITIONS : [];
+    return basePositions.filter(p => !closedPositionIds.has(p.id));
+  }, [showDemo, closedPositionIds]);
 
   // Handle close position
   const handleClosePosition = useCallback(async (positionId: string) => {
     // Simulate closing position
     await new Promise((resolve) => setTimeout(resolve, 1500));
-    setPositions((prev) => prev.filter((p) => p.id !== positionId));
+    setClosedPositionIds((prev) => new Set([...prev, positionId]));
   }, []);
 
   return (

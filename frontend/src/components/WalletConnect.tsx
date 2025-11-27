@@ -19,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CHAIN_IDS, DEFAULT_CHAIN } from "@/config/wagmi";
-import { useCompliance } from "@/providers/ComplianceProvider";
 import { checkOFACBlacklist } from "@/services/ofacCheck";
 
 function formatAddress(address: string): string {
@@ -126,25 +125,21 @@ export function WalletConnect() {
   const [ofacBlocked, setOfacBlocked] = useState(false);
   const [ofacReason, setOfacReason] = useState<string>();
 
-  // Try to get compliance context, but don't fail if not available
-  let compliance: ReturnType<typeof useCompliance> | null = null;
-  try {
-    compliance = useCompliance();
-  } catch {
-    // ComplianceProvider not available, continue without it
-  }
-
   // Check OFAC when address changes
   useEffect(() => {
     if (address) {
       const result = checkOFACBlacklist(address);
       if (result.isBlacklisted) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setOfacBlocked(true);
+         
         setOfacReason(result.reason);
         // Auto-disconnect blacklisted addresses
         disconnect();
       } else {
+         
         setOfacBlocked(false);
+         
         setOfacReason(undefined);
       }
     }

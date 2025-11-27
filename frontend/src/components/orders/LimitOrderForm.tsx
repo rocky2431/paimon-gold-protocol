@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { parseUnits } from "viem";
+import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,17 +31,17 @@ export function LimitOrderForm({ currentPrice, onOrderCreated }: LimitOrderFormP
     ? ((triggerPriceNum - currentPrice) / currentPrice) * 100
     : 0;
 
-  // Get expiry timestamp
-  const getExpiryTimestamp = (): bigint => {
-    if (expiryType === "gtc") return BigInt(0);
-    const now = Math.floor(Date.now() / 1000);
-    switch (expiryType) {
-      case "1d": return BigInt(now + 86400);
-      case "7d": return BigInt(now + 86400 * 7);
-      case "30d": return BigInt(now + 86400 * 30);
-      default: return BigInt(0);
-    }
-  };
+  // Note: getExpiryTimestamp will be used when integrating with smart contract
+  // const getExpiryTimestamp = (): bigint => {
+  //   if (expiryType === "gtc") return BigInt(0);
+  //   const now = Math.floor(Date.now() / 1000);
+  //   switch (expiryType) {
+  //     case "1d": return BigInt(now + 86400);
+  //     case "7d": return BigInt(now + 86400 * 7);
+  //     case "30d": return BigInt(now + 86400 * 30);
+  //     default: return BigInt(0);
+  //   }
+  // };
 
   const handleSubmit = useCallback(async () => {
     if (!isConnected || collateralNum <= 0 || triggerPriceNum <= 0) return;

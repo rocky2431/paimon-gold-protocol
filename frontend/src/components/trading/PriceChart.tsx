@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   createChart,
   ColorType,
@@ -270,6 +270,7 @@ export function PriceChart({
   useEffect(() => {
     const days = timeframe === "1d" ? 90 : timeframe === "4h" ? 30 : 7;
     const newData = generateMockData(currentPrice, days, timeframe);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setData(newData);
 
     // Calculate price change
@@ -278,7 +279,9 @@ export function PriceChart({
       const lastPrice = newData[newData.length - 1].close;
       const change = lastPrice - firstPrice;
       const percent = (change / firstPrice) * 100;
+       
       setPriceChange({ value: change, percent });
+       
       setLatestPrice(lastPrice);
     }
   }, [timeframe, currentPrice]);

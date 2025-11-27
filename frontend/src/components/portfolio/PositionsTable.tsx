@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,7 +33,7 @@ function calculatePnL(
   position: Position,
   currentPrice: number
 ): { pnl: number; pnlPercent: number; healthFactor: number } {
-  const { direction, entryPrice, size, collateral, liquidationPrice } = position;
+  const { direction, entryPrice, size, collateral } = position;
 
   // Calculate price change
   const priceChange = currentPrice - entryPrice;

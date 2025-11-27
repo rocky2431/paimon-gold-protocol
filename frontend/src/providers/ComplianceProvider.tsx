@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { checkGeoBlocking, GeoBlockResult, GeoLocation } from "@/services/geoBlocking";
+import { checkGeoBlocking, GeoBlockResult } from "@/services/geoBlocking";
 import { checkOFACBlacklist, OFACCheckResult } from "@/services/ofacCheck";
 import {
   ComplianceDisclaimer,
