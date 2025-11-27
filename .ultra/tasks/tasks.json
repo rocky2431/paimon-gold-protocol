@@ -260,7 +260,9 @@
       "priority": "P1",
       "dependencies": ["6", "4"],
       "estimated_days": 3,
-      "status": "pending",
+      "status": "completed",
+      "started_at": "2025-11-27T22:50:00Z",
+      "completed_at": "2025-11-27T23:30:00Z",
       "type": "feature",
       "trace_to": "specs/product.md#epic-4-订单系统",
       "acceptance_criteria": [
@@ -537,9 +539,9 @@
   ],
   "metadata": {
     "totalTasks": 28,
-    "completedTasks": 12,
+    "completedTasks": 13,
     "inProgressTasks": 0,
-    "pendingTasks": 16,
+    "pendingTasks": 15,
     "totalEstimatedDays": 45
   }
 }
