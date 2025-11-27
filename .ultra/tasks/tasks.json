@@ -399,7 +399,9 @@
       "priority": "P1",
       "dependencies": ["17"],
       "estimated_days": 2,
-      "status": "pending",
+      "status": "completed",
+      "started_at": "2025-11-28T03:35:00Z",
+      "completed_at": "2025-11-28T04:00:00Z",
       "type": "feature",
       "trace_to": "specs/architecture.md#frontend-stack",
       "acceptance_criteria": [
