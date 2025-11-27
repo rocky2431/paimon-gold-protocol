@@ -240,7 +240,8 @@
       "priority": "P0",
       "dependencies": ["6", "11"],
       "estimated_days": 2,
-      "status": "pending",
+      "status": "in_progress",
+      "started_at": "2025-11-27T22:05:00Z",
       "type": "feature",
       "trace_to": "specs/architecture.md#contract-1-goldleveragerouter",
       "acceptance_criteria": [
