@@ -1,7 +1,9 @@
 "use client";
 
 import { WalletConnect } from "@/components/WalletConnect";
+import { Button } from "@/components/ui/button";
 import { useAccount, useChainId } from "wagmi";
+import Link from "next/link";
 
 export default function Home() {
   const { isConnected, address } = useAccount();
@@ -12,9 +14,31 @@ export default function Home() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-amber-500">Paimon</span>
-            <span className="text-xl font-light">Gold Protocol</span>
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-2">
+              <span className="text-xl font-bold text-amber-500">Paimon</span>
+              <span className="text-xl font-light">Gold Protocol</span>
+            </Link>
+            <nav className="hidden md:flex items-center gap-4">
+              <Link
+                href="/trade"
+                className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+              >
+                Trade
+              </Link>
+              <Link
+                href="/portfolio"
+                className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+              >
+                Portfolio
+              </Link>
+              <Link
+                href="/liquidity"
+                className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+              >
+                Liquidity
+              </Link>
+            </nav>
           </div>
           <WalletConnect />
         </div>
@@ -35,12 +59,19 @@ export default function Home() {
           </p>
 
           {isConnected ? (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-              <p className="mb-2 text-sm text-zinc-500">Connected Wallet</p>
-              <p className="font-mono text-lg">{address}</p>
-              <p className="mt-2 text-sm text-zinc-500">
-                Chain ID: <span className="text-amber-500">{chainId}</span>
-              </p>
+            <div className="flex flex-col items-center gap-4">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
+                <p className="mb-2 text-sm text-zinc-500">Connected Wallet</p>
+                <p className="font-mono text-lg">{address}</p>
+                <p className="mt-2 text-sm text-zinc-500">
+                  Chain ID: <span className="text-amber-500">{chainId}</span>
+                </p>
+              </div>
+              <Link href="/trade">
+                <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-black font-semibold">
+                  Start Trading →
+                </Button>
+              </Link>
             </div>
           ) : (
             <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6 text-center">
