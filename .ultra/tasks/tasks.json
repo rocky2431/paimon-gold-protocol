@@ -320,8 +320,9 @@
       "priority": "P0",
       "dependencies": ["2"],
       "estimated_days": 1,
-      "status": "in_progress",
+      "status": "completed",
       "started_at": "2025-11-28T00:30:00Z",
+      "completed_at": "2025-11-28T01:00:00Z",
       "type": "feature",
       "trace_to": "specs/product.md#usability-requirements",
       "acceptance_criteria": [
@@ -545,8 +546,8 @@
   ],
   "metadata": {
     "totalTasks": 28,
-    "completedTasks": 15,
-    "inProgressTasks": 1,
+    "completedTasks": 16,
+    "inProgressTasks": 0,
     "pendingTasks": 12,
     "totalEstimatedDays": 45
   }
