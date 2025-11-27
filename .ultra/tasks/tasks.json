@@ -418,8 +418,9 @@
       "priority": "P1",
       "dependencies": ["12"],
       "estimated_days": 2,
-      "status": "in_progress",
+      "status": "completed",
       "started_at": "2025-11-28T04:05:00Z",
+      "completed_at": "2025-11-28T04:30:00Z",
       "type": "feature",
       "trace_to": "specs/architecture.md#backend-stack",
       "acceptance_criteria": [
