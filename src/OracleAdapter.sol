@@ -84,6 +84,24 @@ contract OracleAdapter is Ownable, Pausable {
         return _getValidatedPrice();
     }
 
+    /// @notice Get the latest price without updating state (view-only)
+    /// @dev Used for read-only calculations like PnL display
+    /// @return price Price normalized to 18 decimals
+    function getLatestPriceView() external view returns (uint256 price) {
+        (, int256 answer,, uint256 updatedAt,) = priceFeed.latestRoundData();
+
+        // Check for invalid price
+        if (answer <= 0) revert InvalidPrice();
+
+        // Check for stale price
+        if (block.timestamp - updatedAt > stalenessThreshold) {
+            revert StalePrice();
+        }
+
+        // Normalize price to 18 decimals
+        return _normalizePrice(answer);
+    }
+
     // ============ Admin Functions ============
 
     /// @notice Pause the oracle (emergency)
