@@ -220,8 +220,9 @@
       "priority": "P0",
       "dependencies": ["5", "10"],
       "estimated_days": 3,
-      "status": "in_progress",
+      "status": "completed",
       "started_at": "2025-11-27T21:20:00Z",
+      "completed_at": "2025-11-27T22:00:00Z",
       "type": "feature",
       "trace_to": "specs/product.md#fr-2-流动性功能",
       "acceptance_criteria": [
@@ -534,9 +535,9 @@
   ],
   "metadata": {
     "totalTasks": 28,
-    "completedTasks": 7,
+    "completedTasks": 11,
     "inProgressTasks": 0,
-    "pendingTasks": 21,
+    "pendingTasks": 17,
     "totalEstimatedDays": 45
   }
 }
