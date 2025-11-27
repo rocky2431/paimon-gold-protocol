@@ -479,7 +479,10 @@
       "priority": "P1",
       "dependencies": ["22"],
       "estimated_days": 1.5,
-      "status": "pending",
+      "status": "completed",
+      "started_at": "2025-11-28T05:35:00Z",
+      "completed_at": "2025-11-28T06:00:00Z",
+      "notes": "17 fork tests with real BSC mainnet data. Gas verified: openPosition ~387K, closePosition ~23K.",
       "type": "testing",
       "trace_to": "specs/architecture.md#testing-strategy",
       "acceptance_criteria": [
