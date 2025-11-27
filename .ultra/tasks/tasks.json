@@ -240,8 +240,9 @@
       "priority": "P0",
       "dependencies": ["6", "11"],
       "estimated_days": 2,
-      "status": "in_progress",
+      "status": "completed",
       "started_at": "2025-11-27T22:05:00Z",
+      "completed_at": "2025-11-27T22:45:00Z",
       "type": "feature",
       "trace_to": "specs/architecture.md#contract-1-goldleveragerouter",
       "acceptance_criteria": [
@@ -536,9 +537,9 @@
   ],
   "metadata": {
     "totalTasks": 28,
-    "completedTasks": 11,
+    "completedTasks": 12,
     "inProgressTasks": 0,
-    "pendingTasks": 17,
+    "pendingTasks": 16,
     "totalEstimatedDays": 45
   }
 }
