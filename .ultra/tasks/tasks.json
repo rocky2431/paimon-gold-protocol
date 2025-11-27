@@ -438,7 +438,8 @@
       "priority": "P0",
       "dependencies": ["6", "8", "11", "12"],
       "estimated_days": 4,
-      "status": "pending",
+      "status": "in_progress",
+      "started_at": "2025-11-28T04:35:00Z",
       "type": "testing",
       "trace_to": "specs/architecture.md#testing-strategy",
       "acceptance_criteria": [
