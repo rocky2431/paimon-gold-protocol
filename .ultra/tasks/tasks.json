@@ -23,7 +23,8 @@
       "priority": "P0",
       "dependencies": [],
       "estimated_days": 0.5,
-      "status": "pending",
+      "status": "in_progress",
+      "started_at": "2025-11-27T15:45:00Z",
       "type": "architecture",
       "trace_to": "specs/architecture.md#smart-contract-stack",
       "acceptance_criteria": [
