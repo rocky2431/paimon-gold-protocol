@@ -339,7 +339,8 @@
       "priority": "P0",
       "dependencies": ["16", "12"],
       "estimated_days": 3,
-      "status": "pending",
+      "status": "in_progress",
+      "started_at": "2025-11-28T01:15:00Z",
       "type": "feature",
       "trace_to": "specs/product.md#us-1-1-开仓",
       "acceptance_criteria": [
