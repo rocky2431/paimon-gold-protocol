@@ -459,7 +459,10 @@
       "priority": "P0",
       "dependencies": ["22"],
       "estimated_days": 2,
-      "status": "pending",
+      "status": "completed",
+      "started_at": "2025-11-28T05:00:00Z",
+      "completed_at": "2025-11-28T05:30:00Z",
+      "notes": "Created 17 fuzz tests covering PositionManager, LiquidationEngine, LiquidityPool. All pass with 256 runs.",
       "type": "testing",
       "trace_to": "specs/architecture.md#testing-strategy",
       "acceptance_criteria": [
