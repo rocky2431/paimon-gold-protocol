@@ -300,7 +300,9 @@
       "priority": "P0",
       "dependencies": ["12"],
       "estimated_days": 1.5,
-      "status": "pending",
+      "status": "completed",
+      "started_at": "2025-11-27T23:45:00Z",
+      "completed_at": "2025-11-28T00:15:00Z",
       "type": "architecture",
       "trace_to": "specs/product.md#security-constraints",
       "acceptance_criteria": [
@@ -542,9 +544,9 @@
   ],
   "metadata": {
     "totalTasks": 28,
-    "completedTasks": 14,
+    "completedTasks": 15,
     "inProgressTasks": 0,
-    "pendingTasks": 14,
+    "pendingTasks": 13,
     "totalEstimatedDays": 45
   }
 }
