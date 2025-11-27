@@ -538,7 +538,10 @@
       "priority": "P1",
       "dependencies": ["22", "23"],
       "estimated_days": 2,
-      "status": "pending",
+      "status": "completed",
+      "started_at": "2025-11-28T07:00:00Z",
+      "completed_at": "2025-11-28T07:30:00Z",
+      "notes": "Audit package in docs/audit/. Slither high issues are false positives (protected by nonReentrant).",
       "type": "feature",
       "trace_to": "specs/product.md#security-constraints",
       "acceptance_criteria": [
