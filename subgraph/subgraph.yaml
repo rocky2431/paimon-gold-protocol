@@ -1,0 +1,157 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  # PositionManager - tracks all position events
+  - kind: ethereum
+    name: PositionManager
+    network: bsc
+    source:
+      address: "0x0000000000000000000000000000000000000001" # Replace with deployed address
+      abi: PositionManager
+      startBlock: 0 # Replace with deployment block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Position
+        - PartialClose
+        - User
+        - Protocol
+        - DailyStats
+      abis:
+        - name: PositionManager
+          file: ./abis/PositionManager.json
+      eventHandlers:
+        - event: PositionOpened(indexed uint256,indexed address,uint8,uint256,uint256,uint256,uint256)
+          handler: handlePositionOpened
+        - event: PositionClosed(indexed uint256,indexed address,uint256,int256)
+          handler: handlePositionClosed
+        - event: PositionPartialClosed(indexed uint256,indexed address,uint256,uint256,int256)
+          handler: handlePositionPartialClosed
+        - event: MarginAdded(indexed uint256,indexed address,uint256)
+          handler: handleMarginAdded
+        - event: MarginRemoved(indexed uint256,indexed address,uint256)
+          handler: handleMarginRemoved
+      file: ./src/position-manager.ts
+
+  # LiquidityPool - tracks liquidity events
+  - kind: ethereum
+    name: LiquidityPool
+    network: bsc
+    source:
+      address: "0x0000000000000000000000000000000000000002" # Replace with deployed address
+      abi: LiquidityPool
+      startBlock: 0 # Replace with deployment block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - LPPosition
+        - LiquidityAdd
+        - LiquidityRemove
+        - User
+        - Protocol
+        - DailyStats
+        - FeeCollection
+      abis:
+        - name: LiquidityPool
+          file: ./abis/LiquidityPool.json
+      eventHandlers:
+        - event: LiquidityAdded(indexed address,indexed address,uint256,uint256)
+          handler: handleLiquidityAdded
+        - event: LiquidityRemoved(indexed address,uint256,uint256)
+          handler: handleLiquidityRemoved
+        - event: FeesClaimed(indexed address,uint256)
+          handler: handleFeesClaimed
+        - event: FeesDeposited(indexed address,uint256,uint8)
+          handler: handleFeesDeposited
+      file: ./src/liquidity-pool.ts
+
+  # LiquidationEngine - tracks liquidation events
+  - kind: ethereum
+    name: LiquidationEngine
+    network: bsc
+    source:
+      address: "0x0000000000000000000000000000000000000003" # Replace with deployed address
+      abi: LiquidationEngine
+      startBlock: 0 # Replace with deployment block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Liquidation
+        - Position
+        - User
+        - Protocol
+        - DailyStats
+      abis:
+        - name: LiquidationEngine
+          file: ./abis/LiquidationEngine.json
+      eventHandlers:
+        - event: PositionLiquidated(indexed uint256,indexed address,indexed address,uint256,uint256)
+          handler: handlePositionLiquidated
+        - event: PartialLiquidation(indexed uint256,indexed address,indexed address,uint256)
+          handler: handlePartialLiquidation
+      file: ./src/liquidation-engine.ts
+
+  # CollateralVault - tracks deposit/withdrawal events
+  - kind: ethereum
+    name: CollateralVault
+    network: bsc
+    source:
+      address: "0x0000000000000000000000000000000000000004" # Replace with deployed address
+      abi: CollateralVault
+      startBlock: 0 # Replace with deployment block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Deposit
+        - Withdrawal
+        - User
+        - Protocol
+      abis:
+        - name: CollateralVault
+          file: ./abis/CollateralVault.json
+      eventHandlers:
+        - event: Deposited(indexed address,indexed address,uint256)
+          handler: handleDeposited
+        - event: Withdrawn(indexed address,indexed address,uint256)
+          handler: handleWithdrawn
+      file: ./src/collateral-vault.ts
+
+  # OrderManager - tracks limit orders
+  - kind: ethereum
+    name: OrderManager
+    network: bsc
+    source:
+      address: "0x0000000000000000000000000000000000000005" # Replace with deployed address
+      abi: OrderManager
+      startBlock: 0 # Replace with deployment block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - Order
+        - User
+      abis:
+        - name: OrderManager
+          file: ./abis/OrderManager.json
+      eventHandlers:
+        - event: OrderCreated(indexed uint256,indexed address,uint8,uint8,uint256,uint256,uint256,uint256)
+          handler: handleOrderCreated
+        - event: OrderExecuted(indexed uint256,uint256,uint256)
+          handler: handleOrderExecuted
+        - event: OrderCancelled(indexed uint256)
+          handler: handleOrderCancelled
+        - event: OrderExpired(indexed uint256)
+          handler: handleOrderExpired
+      file: ./src/order-manager.ts

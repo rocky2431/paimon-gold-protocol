@@ -1,0 +1,43 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "orderId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "trader", "type": "address" },
+      { "indexed": false, "internalType": "uint8", "name": "orderType", "type": "uint8" },
+      { "indexed": false, "internalType": "uint8", "name": "direction", "type": "uint8" },
+      { "indexed": false, "internalType": "uint256", "name": "triggerPrice", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "collateral", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "leverage", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "expiresAt", "type": "uint256" }
+    ],
+    "name": "OrderCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "orderId", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "executionPrice", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "positionId", "type": "uint256" }
+    ],
+    "name": "OrderExecuted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "orderId", "type": "uint256" }
+    ],
+    "name": "OrderCancelled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "orderId", "type": "uint256" }
+    ],
+    "name": "OrderExpired",
+    "type": "event"
+  }
+]

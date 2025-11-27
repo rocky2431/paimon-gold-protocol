@@ -1,0 +1,25 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "positionId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "liquidator", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "trader", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "collateral", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "penalty", "type": "uint256" }
+    ],
+    "name": "PositionLiquidated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "positionId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "liquidator", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "trader", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "PartialLiquidation",
+    "type": "event"
+  }
+]

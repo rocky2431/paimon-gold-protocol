@@ -1,0 +1,217 @@
+# Paimon Gold Protocol Subgraph Schema
+# Indexes positions, trades, liquidity events, and liquidations
+
+# ==================== ENUMS ====================
+
+enum PositionDirection {
+  LONG
+  SHORT
+}
+
+enum PositionStatus {
+  OPEN
+  CLOSED
+  LIQUIDATED
+  PARTIALLY_CLOSED
+}
+
+enum OrderType {
+  LIMIT
+  STOP_LOSS
+  TAKE_PROFIT
+}
+
+enum OrderStatus {
+  PENDING
+  EXECUTED
+  CANCELLED
+  EXPIRED
+}
+
+# ==================== ENTITIES ====================
+
+# Protocol-wide statistics
+type Protocol @entity {
+  id: ID! # "protocol"
+  totalPositions: BigInt!
+  totalVolume: BigDecimal!
+  totalFees: BigDecimal!
+  totalLiquidations: BigInt!
+  totalLiquidityProviders: BigInt!
+  totalValueLocked: BigDecimal!
+  updatedAt: BigInt!
+}
+
+# User account with aggregated stats
+type User @entity {
+  id: ID! # user address
+  totalPositions: BigInt!
+  openPositions: BigInt!
+  totalVolume: BigDecimal!
+  totalPnL: BigDecimal!
+  totalFeesPaid: BigDecimal!
+  liquidationCount: BigInt!
+  lpPositions: [LPPosition!]! @derivedFrom(field: "user")
+  positions: [Position!]! @derivedFrom(field: "trader")
+  orders: [Order!]! @derivedFrom(field: "trader")
+  deposits: [Deposit!]! @derivedFrom(field: "user")
+  withdrawals: [Withdrawal!]! @derivedFrom(field: "user")
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+# Trading position
+type Position @entity {
+  id: ID! # positionId from contract
+  trader: User!
+  direction: PositionDirection!
+  status: PositionStatus!
+  collateral: BigDecimal!
+  leverage: BigInt!
+  entryPrice: BigDecimal!
+  exitPrice: BigDecimal
+  size: BigDecimal!
+  liquidationPrice: BigDecimal!
+  realizedPnL: BigDecimal
+  fees: BigDecimal!
+  marginAdded: BigDecimal!
+  marginRemoved: BigDecimal!
+  openedAt: BigInt!
+  closedAt: BigInt
+  openTxHash: Bytes!
+  closeTxHash: Bytes
+  partialCloses: [PartialClose!]! @derivedFrom(field: "position")
+}
+
+# Partial position close record
+type PartialClose @entity {
+  id: ID! # txHash-logIndex
+  position: Position!
+  trader: User!
+  amount: BigDecimal!
+  exitPrice: BigDecimal!
+  pnl: BigDecimal!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+# Limit/Stop orders
+type Order @entity {
+  id: ID! # orderId from contract
+  trader: User!
+  orderType: OrderType!
+  status: OrderStatus!
+  direction: PositionDirection!
+  triggerPrice: BigDecimal!
+  collateral: BigDecimal!
+  leverage: BigInt!
+  createdAt: BigInt!
+  executedAt: BigInt
+  cancelledAt: BigInt
+  expiresAt: BigInt!
+  txHash: Bytes!
+  executionTxHash: Bytes
+}
+
+# Liquidity provider position
+type LPPosition @entity {
+  id: ID! # user address
+  user: User!
+  lpTokenBalance: BigDecimal!
+  totalDeposited: BigDecimal!
+  totalWithdrawn: BigDecimal!
+  totalFeesClaimed: BigDecimal!
+  shares: BigDecimal!
+  createdAt: BigInt!
+  updatedAt: BigInt!
+}
+
+# Individual liquidity add event
+type LiquidityAdd @entity {
+  id: ID! # txHash-logIndex
+  provider: User!
+  token: Bytes!
+  amount: BigDecimal!
+  lpTokensMinted: BigDecimal!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+# Individual liquidity remove event
+type LiquidityRemove @entity {
+  id: ID! # txHash-logIndex
+  provider: User!
+  lpTokensBurned: BigDecimal!
+  tokensReturned: BigDecimal!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+# Liquidation event
+type Liquidation @entity {
+  id: ID! # txHash-logIndex
+  position: Position!
+  liquidator: Bytes!
+  trader: User!
+  collateralLiquidated: BigDecimal!
+  penalty: BigDecimal!
+  liquidatorReward: BigDecimal!
+  isPartial: Boolean!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+# Collateral deposit
+type Deposit @entity {
+  id: ID! # txHash-logIndex
+  user: User!
+  token: Bytes!
+  amount: BigDecimal!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+# Collateral withdrawal
+type Withdrawal @entity {
+  id: ID! # txHash-logIndex
+  user: User!
+  token: Bytes!
+  amount: BigDecimal!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+# Fee collection event
+type FeeCollection @entity {
+  id: ID! # txHash-logIndex
+  token: Bytes!
+  amount: BigDecimal!
+  feeType: String!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+# Daily protocol stats for analytics
+type DailyStats @entity {
+  id: ID! # date string YYYY-MM-DD
+  date: BigInt!
+  volume: BigDecimal!
+  fees: BigDecimal!
+  positionsOpened: BigInt!
+  positionsClosed: BigInt!
+  liquidations: BigInt!
+  liquidityAdded: BigDecimal!
+  liquidityRemoved: BigDecimal!
+  uniqueTraders: BigInt!
+}
+
+# Hourly price candle for charts
+type HourlyCandle @entity {
+  id: ID! # timestamp rounded to hour
+  timestamp: BigInt!
+  open: BigDecimal!
+  high: BigDecimal!
+  low: BigDecimal!
+  close: BigDecimal!
+  volume: BigDecimal!
+}
