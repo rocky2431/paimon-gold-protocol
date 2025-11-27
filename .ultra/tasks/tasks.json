@@ -98,7 +98,8 @@
       "priority": "P0",
       "dependencies": ["1"],
       "estimated_days": 2,
-      "status": "pending",
+      "status": "in_progress",
+      "started_at": "2025-11-27T17:35:00Z",
       "type": "feature",
       "trace_to": "specs/product.md#fr-1-交易功能",
       "acceptance_criteria": [
