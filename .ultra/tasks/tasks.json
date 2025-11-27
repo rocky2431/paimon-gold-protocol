@@ -42,7 +42,8 @@
       "priority": "P0",
       "dependencies": [],
       "estimated_days": 1,
-      "status": "pending",
+      "status": "in_progress",
+      "started_at": "2025-11-27T16:35:00Z",
       "type": "architecture",
       "trace_to": "specs/architecture.md#frontend-stack",
       "acceptance_criteria": [
